@@ -1,11 +1,13 @@
-package com.smartcode.notificator.service.impl;
+package com.smartcode.notificator.service.notification.impl;
 
 import com.smartcode.notificator.mapper.NotificationMapper;
-import com.smartcode.notificator.model.CreateNotificationDto;
-import com.smartcode.notificator.model.NotificationDto;
-import com.smartcode.notificator.model.NotificationEntity;
+import com.smartcode.notificator.model.dto.CreateNotificationDto;
+import com.smartcode.notificator.model.dto.NotificationDto;
+import com.smartcode.notificator.model.dto.VerifyNotificationDto;
+import com.smartcode.notificator.model.entity.NotificationEntity;
 import com.smartcode.notificator.repository.NotificationRepository;
-import com.smartcode.notificator.service.NotificationService;
+import com.smartcode.notificator.service.notification.NotificationService;
+import com.smartcode.notificator.service.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -64,8 +67,28 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    @Async
-    public void sendNotifications(NotificationEntity entity) {
+    @Async("notificationSenderExecutors")
+    public void sendNotifications(NotificationEntity entity) throws InterruptedException {
+        long l = entity.getNotificationDateTime() - System.currentTimeMillis();
+        Thread.sleep(l);
+        emailService.sendSimpleMessage(entity.getEmail(),entity.getTitle(),entity.getContent());
+        entity.setSent(true);
+        notificationRepository.save(entity);
+    }
 
+    @Override
+    @Transactional
+    public void verify(VerifyNotificationDto dto) {
+        emailService.sendSimpleMessage(dto.getEmail(), "Verification",
+                "Your verification code is " + dto.getContent());
+        NotificationEntity entity = new NotificationEntity();
+        entity.setContent(dto.getContent());
+        entity.setSent(true);
+        entity.setEmail(dto.getEmail());
+        entity.setTitle("Verification");
+        entity.setUserId(dto.getUserId());
+        entity.setCreationDateTime(Instant.now().toEpochMilli());
+        entity.setNotificationDateTime(Instant.now().toEpochMilli());
+        notificationRepository.save(entity);
     }
 }

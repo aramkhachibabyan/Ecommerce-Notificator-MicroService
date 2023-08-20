@@ -1,4 +1,4 @@
-package com.smartCode.ecommerce.service.email;
+package com.smartcode.notificator.service.email;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;

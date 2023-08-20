@@ -1,13 +1,11 @@
-package com.smartcode.notificator.service;
+package com.smartcode.notificator.service.notification;
 
-import com.smartcode.notificator.model.CreateNotificationDto;
-import com.smartcode.notificator.model.NotificationDto;
-import com.smartcode.notificator.model.NotificationEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
+import com.smartcode.notificator.model.dto.CreateNotificationDto;
+import com.smartcode.notificator.model.dto.NotificationDto;
+import com.smartcode.notificator.model.dto.VerifyNotificationDto;
+import com.smartcode.notificator.model.entity.NotificationEntity;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.*;
 import java.util.List;
 
 
@@ -19,5 +17,8 @@ public interface NotificationService{
 
     List<NotificationEntity> getReadyNotifications();
 
-    void sendNotifications(NotificationEntity entity);
+    void sendNotifications(NotificationEntity entity) throws InterruptedException;
+
+
+    void verify(VerifyNotificationDto dto);
 }
